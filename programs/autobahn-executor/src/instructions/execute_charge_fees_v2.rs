@@ -33,9 +33,10 @@ pub fn execute_charge_fees_v2(accounts: &[AccountInfo], instruction_data: &[u8])
     let token_account = &accounts[2];
     let platform_fee_account = &accounts[3];
     let signer_account = &accounts[4];
+    // 5. optional referrer fee account
+    let referrer_fee_account = accounts.get(5);
 
-    let has_referrer = accounts.len() == 6;
-    let platform_fee_amount = if has_referrer {
+    let platform_fee_amount = if referrer_fee_account.is_some() {
         (fee_amount * platform_fee_percent as u64) / 100
     } else {
         fee_amount
@@ -56,8 +57,7 @@ pub fn execute_charge_fees_v2(accounts: &[AccountInfo], instruction_data: &[u8])
         platform_fee: platform_fee_amount,
     })?;
 
-    if has_referrer {
-        let referrer_fee_account = &accounts[4];
+    if let Some(referrer_fee_account) = referrer_fee_account {
         let referrer_fee_amount = fee_amount.saturating_sub(platform_fee_amount);
         token::transfer(
             token_program,
