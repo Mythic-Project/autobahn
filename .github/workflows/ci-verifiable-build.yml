@@ -6,6 +6,7 @@ on:
 
 env:
   APP_NAME: autobahn_executor
+  SOLANA_VERSION: "1.17.34"
 
 jobs:
   build:
@@ -17,13 +18,20 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          solana --version
+
       - name: Setup Anchor
         run: |
           cargo install --git https://github.com/coral-xyz/anchor --rev fc9fd6d24b9be84abb2f40e47ed3faf7b11864ae anchor-cli --locked --force
 
       - name: Verifiable Build
         run: |
-          anchor build --verifiable --program-name ${{ env.APP_NAME }} --docker-image backpackapp/build:v0.29.0 --solana-version 1.17.34 --env GITHUB_SHA --env GITHUB_REF_NAME
+          anchor build --verifiable --program-name ${{ env.APP_NAME }} --docker-image backpackapp/build:v0.29.0 --solana-version ${{ env.SOLANA_VERSION }} --env GITHUB_SHA --env GITHUB_REF_NAME
 
       - name: Generate Checksum
         run: |
