@@ -34,7 +34,7 @@ pub fn execute_charge_fees_v2(accounts: &[AccountInfo], instruction_data: &[u8])
     let platform_fee_account = &accounts[3];
     let signer_account = &accounts[4];
     // 5. optional referrer fee account
-    let referrer_fee_account = (accounts.len() == 6).then(|| &accounts[5]);
+    let referrer_fee_account = accounts.get(5);
 
     let platform_fee_amount = if referrer_fee_account.is_some() {
         (fee_amount * platform_fee_percent as u64) / 100
