@@ -19,11 +19,11 @@ jobs:
 
       - name: Setup Anchor
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor --rev 4e5280be46d859ba1c57fabe4c3916bec742fd69 anchor-cli --locked --force
+          cargo install --git https://github.com/coral-xyz/anchor --rev fc9fd6d24b9be84abb2f40e47ed3faf7b11864ae anchor-cli --locked --force
 
       - name: Verifiable Build
         run: |
-          anchor build --verifiable --program-name ${{ env.APP_NAME }} --docker-image backpackapp/build:v0.28.0 --solana-version 1.17.34 --env GITHUB_SHA --env GITHUB_REF_NAME
+          anchor build --verifiable --program-name ${{ env.APP_NAME }} --docker-image backpackapp/build:v0.29.0 --solana-version 1.17.34 --env GITHUB_SHA --env GITHUB_REF_NAME
 
       - name: Generate Checksum
         run: |
