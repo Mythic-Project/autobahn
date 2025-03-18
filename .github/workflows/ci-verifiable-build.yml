@@ -34,12 +34,19 @@ jobs:
           cargo install --git https://github.com/coral-xyz/anchor --rev ${{ env.ANCHOR_0_30_0_RELEASE_HASH }} anchor-cli --locked --force
 
       - name: Verifiable Build
+        # anchor build currently errors out in the IDL generation step because of our ancient used solana libs versions. It still produces the sbf binary though.
+        # So we simply ignore the error and check for the produced binary.
+        # Skipping IDL generation with the --no-idl flag doesn't work (for verifiable builds?).
         run: |
-          anchor build --verifiable --program-name ${{ env.APP_NAME }} --docker-image backpackapp/build:v${{ env.ANCHOR_VERSION }} --solana-version ${{ env.SOLANA_VERSION }} --no-idl --env GITHUB_SHA --env GITHUB_REF_NAME;
+          anchor build --verifiable --program-name "$APP_NAME" --docker-image "backpackapp/build:v$ANCHOR_VERSION" --solana-version "$SOLANA_VERSION" --env GITHUB_SHA --env GITHUB_REF_NAME || true
+          if ! [ -f "./target/verifiable/${APP_NAME}.so" ]; then
+            echo "Anchor build did not produce an artifact!"
+            exit 1
+          fi
 
       - name: Generate Checksum
         run: |
-          echo "CHECKSUM=$(sha256sum ./target/verifiable/${{ env.APP_NAME }}.so | head -c 64)" >> $GITHUB_ENV
+          echo "CHECKSUM=$(sha256sum "./target/verifiable/${APP_NAME}.so" | head -c 64)" >> $GITHUB_ENV
 
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@master
